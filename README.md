@@ -1,2 +1,4 @@
 # axt-links-saver-haskell
-App for saving links
+    AXT Хранитель ссылок
+
+Приложение для хранения ссылок локально.
