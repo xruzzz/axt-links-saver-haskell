@@ -2,7 +2,7 @@ name:                links-saver
 version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
-homepage:            http://www.axlu.net
+homepage:            http://axt
 license:             GPL-2
 license-file:        LICENSE
 author:              RuZzz
@@ -20,15 +20,18 @@ library
                     Database.Tables,
                     Database.Types,
                     Database.Queries,
-                    Database.URLSchemes,
                     Options,
-                    URL
+                    Types,
+                    URL.Common,
+                    URL.Parse
   build-depends:
                     base >= 4.7 && < 5,
                     base-unicode-symbols,
                     bytestring,
                     directory,
                     opaleye,
+                    lens,
+                    parsec,
                     postgresql-simple,
                     product-profunctors,
                     network-uri,

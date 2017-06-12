@@ -14,21 +14,17 @@ import Control.Monad.Trans.Either(EitherT(..), runEitherT, hoistEither, left)
 import qualified Data.ByteString.Char8 as BSC8 (ByteString, putStrLn, pack, unpack)
 import Data.IORef
 import Data.Time.Clock.POSIX
--- import Network.URI
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.SqlQQ
 import qualified Database.PostgreSQL.Simple as PGS(Connection, connect,execute,execute_,query,query_, SqlError(..))
 import Control.Monad.IO.Class (liftIO)
---import Database.Categories
-import Database.URLSchemes as URLSch
 import qualified Database as DB
 import System.Directory
 import System.Environment
 import System.Exit
 import System.IO
 import System.Console.GetOpt
-import URL
--- import AXOptions
+import URL.Parse(parseURL)
 import Opaleye as OP(Column, Nullable, matchNullable, isNull,
                           Table(Table), required, queryTable,
                           Query, QueryArr, restrict, (.==), (.<=), (.&&), (.<),
@@ -100,6 +96,7 @@ optionArgs = [
     ((ReqArg getUserInterface "FILE" ), "Интерфейс программы"),
     ((NoArg showVersion        ), "show version number")
   ]
+
 add :: String → IO ()
 add link = putStrLn $ "Добавление " ++ link
 
@@ -138,7 +135,7 @@ main = do
                     optRequest = req,
                     optInput = input,
                     optOutput = output } = opts
-        getHandler conn req
+        getHandler conn "AddLink"
         input >>= output
 {-
         case cfg of
@@ -216,7 +213,7 @@ getHandler ∷ PGS.Connection → String → IO()
 getHandler conn "GetLink" = do
     putStrLn "Для"
     putStrLn "   - получения справки нажмите F1"
-    putStrLn "   - добавления пароля ссылки нажмите F2 + c"
+    putStrLn "   - добавления ссылки ссылки нажмите F2 + c"
     putStrLn "   - получения ссылки введите название метки"
 --    HL.runInputT HL.defaultSettings repl
     
@@ -226,6 +223,12 @@ getHandler conn "GetLink" = do
                  Right x -> do
                      print x
                  Left m -> putStrLn m
+    return ()
+getHandler conn "AddLink" = do
+    putStrLn "Добавление "
+    ss <- getLine
+    let lsd = parseURL ss
+    putStrLn .show $ lsd
     return ()
 getHandler conn _ = do
     putStrLn "Режим не выбран"

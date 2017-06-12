@@ -21,6 +21,5 @@ $(makeAdaptorAndInstance "pDomain" ''PolyDomain)
 
 domainsTable :: Table DomainPGW DomainPGR
 domainsTable = Table "domains" (pDomain Domain {level = required "level",
-                                        name = required "name"
-                                        })
+                                        name = required "name"})
 

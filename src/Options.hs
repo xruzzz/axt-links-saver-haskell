@@ -21,7 +21,7 @@ data Options = Options  {
 
 defaultOptions ∷ Options
 defaultOptions = Options {
-    optRequest = "GetLink", 
+    optRequest = "AddLink", 
     optInput  = getContents,
     optOutput = putStr,
     optUserInterface = "cui"
@@ -42,4 +42,4 @@ options = [
   ]
 
 -- Сценарии главного варианта использования
-cases = ["GetLink"]
+cases = ["GetLink", "AddLink"]
