@@ -13,48 +13,57 @@ module URL.Parse
 import Network.URI (URI)
 import Data.Word
 import Data.List.Split
+import Debug.Trace(trace)
 import Text.Parsec.ByteString as PSBSL (GenParser (..), Parser)
-import Text.ParserCombinators.Parsec as PS( (<|>),(<?>), anyChar, char, choice, digit, letter, many, many1, manyTill, spaces, noneOf, oneOf, parse, sepBy, string, try, GenParser (..),ParseError(..))
+import Text.ParserCombinators.Parsec as PCS( (<|>),(<?>), anyChar, char, choice, digit, letter, many, many1, manyTill, skipMany, spaces, noneOf, oneOf, parse, sepBy, string, try, GenParser (..),ParseError(..))
+import Text.Parsec as PS( (<|>),(<?>), anyChar, char, choice, digit, letter, many, many1, manyTill, skipMany, spaces, noneOf, oneOf, parse, sepBy, string, try,ParseError(..))
 import qualified Data.ByteString as BS (ByteString, concat, putStrLn, readFile) 
 import qualified Data.ByteString.Char8 as BSC8 (lines, pack, unpack,unwords)
 import URL.Common(bsPack)
-import Types(URL(..))
+import Types(URL(..), Host(..))
 
-schemeC :: PSBSL.GenParser Char st BS.ByteString
-schemeC = do
-    sr <- many $ noneOf ":/\n"
-    return $ BSC8.pack sr
+schemeC :: PSBSL.GenParser Char st String
+schemeC = many $ noneOf ":/\n"
 
---    return $ BSC8.pack sr
+domain :: PSBSL.GenParser Char st String
+domain = many $ noneOf ":/.\n"
 
--- firstDomain :: PSBSL.GenParser Char st BS.ByteString
-domain :: PSBSL.GenParser Char st BS.ByteString
-domain = do
-    sr <- many $ noneOf ":/.\n"
-    return $ BSC8.pack sr
-
-{-
-domain :: PSBSL.GenParser Char st BS.ByteString
-domain = do
-    string "."
-    sr ← many $ noneOf ":/.\n"
-    many anyChar
-    return $ BSC8.pack sr
-    -}
--- domains :: PSBSL.GenParser Char st [BS.ByteString]
+domains :: PSBSL.GenParser Char st [String]
 domains = do
     d1 <- domain
-    ds <- many domain
+    ds <- many (char '.' >> domain)
     return $ reverse (d1:ds)
+
+path = many $ noneOf "?#\n"
+
+            
+pathTest = do
+    p <- (PS.try $ do
+        char '/'
+        pp <- path
+        return $ Just pp
+        <|> return Nothing)
+    q <- (PS.try $ do
+        char '?'
+        qq <- many (noneOf "#")
+        return $ Just qq
+        <|> return Nothing)
+    f <- (PS.try $ do
+        char '#'
+        ff <- many (noneOf "\n")
+        return $ Just ff
+        <|> return Nothing)
+    return (p, q, f)
 
 url ::  PSBSL.GenParser Char st URL
 url = do
     sch <- schemeC
     string "://"
---    domains
---    string "/"
+    w <- ((PS.try (string "www.") >> return True) <|> return False)
+    ds <- domains
+    (p,q,f) <- pathTest
     many anyChar
-    return URL {_scheme = sch }
+    return $ URL {_scheme = BSC8.pack sch, _auth = Nothing, _host = Host {_www=w, _domains = fmap BSC8.pack ds}, _port= Nothing, _path =BSC8.pack <$> p, _c_query = BSC8.pack <$> q, _fragment = BSC8.pack <$> f}
 
 parseURL ∷ String -> Either PS.ParseError URL
 parseURL = parse url "(unknown parseLine)" . BSC8.pack

@@ -8,6 +8,7 @@ semigroups
 {-# LANGUAGE TemplateHaskell #-}
 module Types
     (
+      Host(..),
       URL(..)
     ) where
 import Network.URI (URI)
@@ -26,7 +27,7 @@ data URIAuth1 = URIAuth1 {
      _password::Maybe BS.ByteString
     } deriving (Eq, Show, Read)
 
-data Host = Domains [BS.ByteString] | IPv4 Word32
+data Host = Host { _www :: Bool, _domains :: [BS.ByteString]} | IPv4 Word32
                     deriving (Eq, Show, Read)
 
 data URL = URL {
@@ -38,7 +39,9 @@ data URL = URL {
                     _c_query::Maybe BS.ByteString,
                     _fragment::Maybe BS.ByteString
                 } deriving (Eq, Show, Read)
+
 makeLenses ''URIAuth1
+makeLenses ''Host
 makeLenses ''URL
                 {-
 instance Show URL where
